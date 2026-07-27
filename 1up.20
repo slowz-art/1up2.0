@@ -7366,9 +7366,9 @@ local Library do
 
 
 
-
 Library.Sections.Tabbox = function(self, Data)
     Data = Data or {}
+    local TabboxName = Data.Name or Data.name or "Tabbox"
 
     local Tabbox = {
         Window = self.Window,
@@ -7379,7 +7379,7 @@ Library.Sections.Tabbox = function(self, Data)
     }
 
     -- Main container
-    local TabboxFrame = Instances:Create("Frame", {
+    local Main = Instances:Create("Frame", {
         Parent = self.Items["Content"].Instance,
         Name = "\0",
         BackgroundTransparency = 1,
@@ -7388,27 +7388,49 @@ Library.Sections.Tabbox = function(self, Data)
         BorderSizePixel = 0
     })
 
-    -- Tab buttons bar
-    local TabButtons = Instances:Create("Frame", {
-        Parent = TabboxFrame.Instance,
+    -- Title
+    local Title = Instances:Create("TextLabel", {
+        Parent = Main.Instance,
         Name = "\0",
-        Size = UDim2New(1, 0, 0, 28),
+        Text = TabboxName,
+        FontFace = Library.Font,
+        TextSize = 14,
+        TextColor3 = FromRGB(220, 220, 220),
         BackgroundTransparency = 1,
+        Size = UDim2New(1, 0, 0, 18),
+        TextXAlignment = Enum.TextXAlignment.Left,
         BorderSizePixel = 0
     })
+    Title:AddToTheme({TextColor3 = "Text"})
 
-    Instances:Create("UIListLayout", {
-        Parent = TabButtons.Instance,
+    -- Tab buttons container
+    local TabBar = Instances:Create("Frame", {
+        Parent = Main.Instance,
+        Name = "\0",
+        Position = UDim2New(0, 0, 0, 22),
+        Size = UDim2New(1, 0, 0, 26),
+        BackgroundColor3 = FromRGB(22, 21, 24),
+        BorderSizePixel = 0
+    })
+    TabBar:AddToTheme({BackgroundColor3 = "Element"})
+
+    Instances:Create("UICorner", {
+        Parent = TabBar.Instance,
+        CornerRadius = UDimNew(0, 5)
+    })
+
+    local TabList = Instances:Create("UIListLayout", {
+        Parent = TabBar.Instance,
         FillDirection = Enum.FillDirection.Horizontal,
-        Padding = UDimNew(0, 6),
+        Padding = UDimNew(0, 0),
         SortOrder = Enum.SortOrder.LayoutOrder
     })
 
-    -- Content holder
+    -- Content area
     local ContentHolder = Instances:Create("Frame", {
-        Parent = TabboxFrame.Instance,
+        Parent = Main.Instance,
         Name = "\0",
-        Position = UDim2New(0, 0, 0, 34),
+        Position = UDim2New(0, 0, 0, 54),
         Size = UDim2New(1, 0, 0, 0),
         BackgroundTransparency = 1,
         AutomaticSize = Enum.AutomaticSize.Y,
@@ -7420,41 +7442,46 @@ Library.Sections.Tabbox = function(self, Data)
 
         local Tab = {
             Name = Name,
-            Window = self.Window,
-            Page = self.Page,
-            Section = self,          -- important
+            Window = Tabbox.Window,
+            Page = Tabbox.Page,
+            Section = Tabbox.Section,
             Elements = {},
             Items = {}
         }
 
-        -- Button
+        -- Tab Button
         local Button = Instances:Create("TextButton", {
-            Parent = TabButtons.Instance,
+            Parent = TabBar.Instance,
             Name = "\0",
             Text = Name,
             FontFace = Library.Font,
             TextSize = 13,
-            TextColor3 = FromRGB(180, 180, 180),
+            TextColor3 = FromRGB(160, 160, 160),
             AutoButtonColor = false,
-            Size = UDim2New(0, 0, 1, 0),
-            AutomaticSize = Enum.AutomaticSize.X,
-            BackgroundColor3 = FromRGB(30, 29, 33),
+            Size = UDim2New(0.5, 0, 1, 0), -- perfect for 2 tabs
+            BackgroundTransparency = 1,
             BorderSizePixel = 0
         })
-        Button:AddToTheme({BackgroundColor3 = "Element", TextColor3 = "Text"})
+
+        -- Active underline
+        local Underline = Instances:Create("Frame", {
+            Parent = Button.Instance,
+            Name = "\0",
+            AnchorPoint = Vector2New(0.5, 1),
+            Position = UDim2New(0.5, 0, 1, 0),
+            Size = UDim2New(0.7, 0, 0, 2),
+            BackgroundColor3 = Library.Theme.Accent,
+            BackgroundTransparency = 1,
+            BorderSizePixel = 0
+        })
+        Underline:AddToTheme({BackgroundColor3 = "Accent"})
 
         Instances:Create("UICorner", {
-            Parent = Button.Instance,
-            CornerRadius = UDimNew(0, 5)
+            Parent = Underline.Instance,
+            CornerRadius = UDimNew(1, 0)
         })
 
-        Instances:Create("UIPadding", {
-            Parent = Button.Instance,
-            PaddingLeft = UDimNew(0, 14),
-            PaddingRight = UDimNew(0, 14)
-        })
-
-        -- Content frame for this tab
+        -- Content
         local Content = Instances:Create("Frame", {
             Parent = ContentHolder.Instance,
             Name = "\0",
@@ -7473,21 +7500,24 @@ Library.Sections.Tabbox = function(self, Data)
 
         Instances:Create("UIPadding", {
             Parent = Content.Instance,
-            PaddingTop = UDimNew(0, 2),
-            PaddingBottom = UDimNew(0, 6)
+            PaddingTop = UDimNew(0, 4),
+            PaddingBottom = UDimNew(0, 2)
         })
 
         Tab.Items["Content"] = Content
         Tab.Button = Button
+        Tab.Underline = Underline
 
         function Tab:Show()
             for _, t in pairs(Tabbox.Tabs) do
                 t.Items["Content"].Instance.Visible = false
-                t.Button.Instance.TextColor3 = FromRGB(170, 170, 170)
+                t.Button.Instance.TextColor3 = FromRGB(160, 160, 160)
+                t.Underline.Instance.BackgroundTransparency = 1
             end
 
             Content.Instance.Visible = true
-            Button.Instance.TextColor3 = Library.Theme.Accent or Color3.fromRGB(0, 170, 255)
+            Button.Instance.TextColor3 = FromRGB(240, 240, 240)
+            Underline.Instance.BackgroundTransparency = 0
             Tabbox.CurrentTab = Tab
         end
 
@@ -7495,159 +7525,13 @@ Library.Sections.Tabbox = function(self, Data)
             Tab:Show()
         end)
 
-        -- First tab auto open
         if #Tabbox.Tabs == 0 then
             task.defer(function()
                 Tab:Show()
             end)
         end
 
-        -- This makes Toggle, Slider, Button etc. work
         setmetatable(Tab, Library.Sections)
-
-        table.insert(Tabbox.Tabs, Tab)
-        return Tab
-    end
-
-    return Tabbox
-endLibrary.Sections.Tabbox = function(self, Data)
-    Data = Data or {}
-
-    local Tabbox = {
-        Window = self.Window,
-        Page = self.Page,
-        Section = self,
-        Tabs = {},
-        CurrentTab = nil
-    }
-
-    -- Main container
-    local TabboxFrame = Instances:Create("Frame", {
-        Parent = self.Items["Content"].Instance,
-        Name = "\0",
-        BackgroundTransparency = 1,
-        Size = UDim2New(1, 0, 0, 0),
-        AutomaticSize = Enum.AutomaticSize.Y,
-        BorderSizePixel = 0
-    })
-
-    -- Tab buttons bar
-    local TabButtons = Instances:Create("Frame", {
-        Parent = TabboxFrame.Instance,
-        Name = "\0",
-        Size = UDim2New(1, 0, 0, 28),
-        BackgroundTransparency = 1,
-        BorderSizePixel = 0
-    })
-
-    Instances:Create("UIListLayout", {
-        Parent = TabButtons.Instance,
-        FillDirection = Enum.FillDirection.Horizontal,
-        Padding = UDimNew(0, 6),
-        SortOrder = Enum.SortOrder.LayoutOrder
-    })
-
-    -- Content holder
-    local ContentHolder = Instances:Create("Frame", {
-        Parent = TabboxFrame.Instance,
-        Name = "\0",
-        Position = UDim2New(0, 0, 0, 34),
-        Size = UDim2New(1, 0, 0, 0),
-        BackgroundTransparency = 1,
-        AutomaticSize = Enum.AutomaticSize.Y,
-        BorderSizePixel = 0
-    })
-
-    function Tabbox:Tab(Name)
-        Name = tostring(Name or "Tab")
-
-        local Tab = {
-            Name = Name,
-            Window = self.Window,
-            Page = self.Page,
-            Section = self,          -- important
-            Elements = {},
-            Items = {}
-        }
-
-        -- Button
-        local Button = Instances:Create("TextButton", {
-            Parent = TabButtons.Instance,
-            Name = "\0",
-            Text = Name,
-            FontFace = Library.Font,
-            TextSize = 13,
-            TextColor3 = FromRGB(180, 180, 180),
-            AutoButtonColor = false,
-            Size = UDim2New(0, 0, 1, 0),
-            AutomaticSize = Enum.AutomaticSize.X,
-            BackgroundColor3 = FromRGB(30, 29, 33),
-            BorderSizePixel = 0
-        })
-        Button:AddToTheme({BackgroundColor3 = "Element", TextColor3 = "Text"})
-
-        Instances:Create("UICorner", {
-            Parent = Button.Instance,
-            CornerRadius = UDimNew(0, 5)
-        })
-
-        Instances:Create("UIPadding", {
-            Parent = Button.Instance,
-            PaddingLeft = UDimNew(0, 14),
-            PaddingRight = UDimNew(0, 14)
-        })
-
-        -- Content frame for this tab
-        local Content = Instances:Create("Frame", {
-            Parent = ContentHolder.Instance,
-            Name = "\0",
-            Size = UDim2New(1, 0, 0, 0),
-            BackgroundTransparency = 1,
-            Visible = false,
-            AutomaticSize = Enum.AutomaticSize.Y,
-            BorderSizePixel = 0
-        })
-
-        Instances:Create("UIListLayout", {
-            Parent = Content.Instance,
-            Padding = UDimNew(0, 6),
-            SortOrder = Enum.SortOrder.LayoutOrder
-        })
-
-        Instances:Create("UIPadding", {
-            Parent = Content.Instance,
-            PaddingTop = UDimNew(0, 2),
-            PaddingBottom = UDimNew(0, 6)
-        })
-
-        Tab.Items["Content"] = Content
-        Tab.Button = Button
-
-        function Tab:Show()
-            for _, t in pairs(Tabbox.Tabs) do
-                t.Items["Content"].Instance.Visible = false
-                t.Button.Instance.TextColor3 = FromRGB(170, 170, 170)
-            end
-
-            Content.Instance.Visible = true
-            Button.Instance.TextColor3 = Library.Theme.Accent or Color3.fromRGB(0, 170, 255)
-            Tabbox.CurrentTab = Tab
-        end
-
-        Button:Connect("MouseButton1Down", function()
-            Tab:Show()
-        end)
-
-        -- First tab auto open
-        if #Tabbox.Tabs == 0 then
-            task.defer(function()
-                Tab:Show()
-            end)
-        end
-
-        -- This makes Toggle, Slider, Button etc. work
-        setmetatable(Tab, Library.Sections)
-
         table.insert(Tabbox.Tabs, Tab)
         return Tab
     end
