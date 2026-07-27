@@ -7377,10 +7377,10 @@ Library.Sections.Tabbox = function(self, Data)
         CurrentTab = nil
     }
 
-    -- Outer "groupbox" card, styled the same way as the boxed sub-elements
-    -- already used elsewhere in the library (e.g. the SubElements frame
-    -- under Label/Keybind: Element background, rounded corners, subtle
-    -- Outline stroke) so it reads as a self-contained box, not a bare bar.
+    -- Outer "groupbox" card. Matches the exact same background transparency,
+    -- color, and theme key as a normal Section's outer frame (0.65 transparent,
+    -- "Section Background 2") so it blends with the blurred game view behind
+    -- the window instead of sitting as a solid opaque block.
     local Box = Instances:Create("Frame", {
         Parent = self.Items["Content"].Instance,
         Name = "\0",
@@ -7388,9 +7388,10 @@ Library.Sections.Tabbox = function(self, Data)
         AutomaticSize = Enum.AutomaticSize.Y,
         BorderSizePixel = 0,
         ZIndex = 2,
-        BackgroundColor3 = FromRGB(27, 26, 29)
+        BackgroundTransparency = 0.6499999761581421,
+        BackgroundColor3 = FromRGB(29, 28, 32)
     })
-    Box:AddToTheme({BackgroundColor3 = "Element"})
+    Box:AddToTheme({BackgroundColor3 = "Section Background 2"})
 
     Instances:Create("UICorner", {
         Parent = Box.Instance,
