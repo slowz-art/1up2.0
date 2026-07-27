@@ -7365,7 +7365,6 @@ local Library do
     end
 
 
-
 Library.Sections.Tabbox = function(self, Data)
     Data = Data or {}
     local TabboxName = Data.Name or Data.name or "Tabbox"
@@ -7378,7 +7377,6 @@ Library.Sections.Tabbox = function(self, Data)
         CurrentTab = nil
     }
 
-    -- Main container (respects section padding)
     local Main = Instances:Create("Frame", {
         Parent = self.Items["Content"].Instance,
         Name = "\0",
@@ -7388,15 +7386,14 @@ Library.Sections.Tabbox = function(self, Data)
         BorderSizePixel = 0
     })
 
-    -- Small title
+    -- Title (more visible)
     local Title = Instances:Create("TextLabel", {
         Parent = Main.Instance,
         Name = "\0",
         Text = TabboxName,
         FontFace = Library.Font,
         TextSize = 13,
-        TextColor3 = FromRGB(200, 200, 200),
-        TextTransparency = 0.2,
+        TextColor3 = FromRGB(230, 230, 230),
         BackgroundTransparency = 1,
         Size = UDim2New(1, 0, 0, 16),
         TextXAlignment = Enum.TextXAlignment.Left,
@@ -7404,20 +7401,20 @@ Library.Sections.Tabbox = function(self, Data)
     })
     Title:AddToTheme({TextColor3 = "Text"})
 
-    -- Tab bar (more compact)
+    -- Tab Bar (lighter so you can see it)
     local TabBar = Instances:Create("Frame", {
         Parent = Main.Instance,
         Name = "\0",
         Position = UDim2New(0, 0, 0, 20),
-        Size = UDim2New(1, 0, 0, 24),
-        BackgroundColor3 = FromRGB(20, 19, 22),
+        Size = UDim2New(1, 0, 0, 26),
+        BackgroundColor3 = FromRGB(32, 31, 36),
         BorderSizePixel = 0
     })
     TabBar:AddToTheme({BackgroundColor3 = "Element"})
 
     Instances:Create("UICorner", {
         Parent = TabBar.Instance,
-        CornerRadius = UDimNew(0, 4)
+        CornerRadius = UDimNew(0, 5)
     })
 
     Instances:Create("UIListLayout", {
@@ -7427,11 +7424,11 @@ Library.Sections.Tabbox = function(self, Data)
         SortOrder = Enum.SortOrder.LayoutOrder
     })
 
-    -- Content area
+    -- Content
     local ContentHolder = Instances:Create("Frame", {
         Parent = Main.Instance,
         Name = "\0",
-        Position = UDim2New(0, 0, 0, 50),
+        Position = UDim2New(0, 0, 0, 52),
         Size = UDim2New(1, 0, 0, 0),
         BackgroundTransparency = 1,
         AutomaticSize = Enum.AutomaticSize.Y,
@@ -7455,15 +7452,14 @@ Library.Sections.Tabbox = function(self, Data)
             Name = "\0",
             Text = Name,
             FontFace = Library.Font,
-            TextSize = 12,
-            TextColor3 = FromRGB(150, 150, 150),
+            TextSize = 13,
+            TextColor3 = FromRGB(170, 170, 170),
             AutoButtonColor = false,
             Size = UDim2New(0.5, 0, 1, 0),
             BackgroundTransparency = 1,
             BorderSizePixel = 0
         })
 
-        -- Underline
         local Underline = Instances:Create("Frame", {
             Parent = Button.Instance,
             Name = "\0",
@@ -7493,7 +7489,7 @@ Library.Sections.Tabbox = function(self, Data)
 
         Instances:Create("UIListLayout", {
             Parent = Content.Instance,
-            Padding = UDimNew(0, 5),
+            Padding = UDimNew(0, 6),
             SortOrder = Enum.SortOrder.LayoutOrder
         })
 
@@ -7504,12 +7500,12 @@ Library.Sections.Tabbox = function(self, Data)
         function Tab:Show()
             for _, t in pairs(Tabbox.Tabs) do
                 t.Items["Content"].Instance.Visible = false
-                t.Button.Instance.TextColor3 = FromRGB(150, 150, 150)
+                t.Button.Instance.TextColor3 = FromRGB(170, 170, 170)
                 t.Underline.Instance.BackgroundTransparency = 1
             end
 
             Content.Instance.Visible = true
-            Button.Instance.TextColor3 = FromRGB(235, 235, 235)
+            Button.Instance.TextColor3 = FromRGB(245, 245, 245)
             Underline.Instance.BackgroundTransparency = 0
             Tabbox.CurrentTab = Tab
         end
@@ -7531,6 +7527,7 @@ Library.Sections.Tabbox = function(self, Data)
 
     return Tabbox
 end
+
 
 
     Library.CreateSettingsPage = function(self, Window, KeybindList)
