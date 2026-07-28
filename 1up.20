@@ -2285,7 +2285,7 @@ local Library do
                     AnchorPoint = Vector2New(0.5, 0.5),
                     BackgroundTransparency = 0.12,
                     Position = UDim2New(0.5519999861717224, 0, 0.5, 0),
-                    Size = UDim2New(0, 677, 0, 644),
+                    Size = UDim2New(0, 550, 0, 644),
                     ZIndex = 2,
                     BorderSizePixel = 0,
                     BackgroundColor3 = FromRGB(27, 25, 29)
@@ -2299,7 +2299,7 @@ local Library do
                     })                    
                 end
 
-                Items["MainFrame"]:MakeResizeable(Vector2New(Items["MainFrame"].Instance.AbsoluteSize.X, Items["MainFrame"].Instance.AbsoluteSize.Y), Vector2New(900, 800), OriginalSizes)
+                Items["MainFrame"]:MakeResizeable(Vector2New(Items["MainFrame"].Instance.AbsoluteSize.X, Items["MainFrame"].Instance.AbsoluteSize.Y), Vector2New(730, 800), OriginalSizes)
                 Library:MakeBlurred(Items["MainFrame"], Window)
                 
                 Items["LeftTabs"] = Instances:Create("Frame", {
@@ -2308,12 +2308,7 @@ local Library do
                     Visible = true,
                     BorderColor3 = FromRGB(0, 0, 0),
                     AnchorPoint = Vector2New(1, 0),
-                    BackgroundTransparency = 0.15,
-                    Size = UDim2New(0, 225, 1, 0),
-                    ZIndex = 2,
-                    BorderSizePixel = 0,
-                    BackgroundColor3 = FromRGB(27, 25, 29)
-                })  Items["LeftTabs"]:AddToTheme({BackgroundColor3 = "Background"})
+                    Size = UDim2New(0, 185, 1, 0),
 
                 Library:MakeBlurred(Items["LeftTabs"], Window)
 
@@ -3476,13 +3471,7 @@ local Library do
                     BorderColor3 = FromRGB(0, 0, 0),
                     Text = "",
                     AutoButtonColor = false,
-                    BackgroundTransparency = 1,
-                    BorderSizePixel = 0,
-                    Size = UDim2New(0, 200, 0, 40),
-                    ZIndex = 2,
-                    TextSize = 14,
-                    BackgroundColor3 = FromRGB(124, 163, 255)
-                })  Items["Inactive"]:AddToTheme({BackgroundColor3 = "Accent"})
+                    Size = UDim2New(0, 160, 0, 40),
                 
                 Instances:Create("UICorner", {
                     Parent = Items["Inactive"].Instance,
