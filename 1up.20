@@ -7588,6 +7588,284 @@ Library.Sections.Tabbox = function(self, Data)
 end
 
 
+Library.Sections.ESPPreview = function(self, Data)
+    Data = Data or {}
+
+    local Preview = {
+        Window = self.Window,
+        Page = self.Page,
+        Section = self,
+        Player = nil
+    }
+
+    local Items = { } do
+        -- Outer card: same translucent "Section Background 2" treatment as
+        -- the Tabbox card, so it blends with the window instead of sitting
+        -- on top as a solid opaque block.
+        Items["ESPPreview"] = Instances:Create("Frame", {
+            Parent = self.Items["Content"].Instance,
+            Name = "\0",
+            Size = UDim2New(1, 0, 0, 220),
+            BorderSizePixel = 0,
+            ZIndex = 2,
+            BackgroundTransparency = 0.6499999761581421,
+            BackgroundColor3 = FromRGB(29, 28, 32)
+        })
+        Items["ESPPreview"]:AddToTheme({BackgroundColor3 = "Section Background 2"})
+
+        Instances:Create("UICorner", {
+            Parent = Items["ESPPreview"].Instance,
+            Name = "\0",
+            CornerRadius = UDimNew(0, 6)
+        })
+
+        Instances:Create("UIStroke", {
+            Parent = Items["ESPPreview"].Instance,
+            Name = "\0",
+            Color = FromRGB(35, 33, 38),
+            ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+        }):AddToTheme({Color = "Outline"})
+
+        Instances:Create("UIPadding", {
+            Parent = Items["ESPPreview"].Instance,
+            Name = "\0",
+            PaddingTop = UDimNew(0, 10),
+            PaddingBottom = UDimNew(0, 10),
+            PaddingLeft = UDimNew(0, 10),
+            PaddingRight = UDimNew(0, 10)
+        })
+
+        Items["Text"] = Instances:Create("TextLabel", {
+            Parent = Items["ESPPreview"].Instance,
+            Name = "\0",
+            FontFace = Library.Font,
+            TextSize = 14,
+            TextColor3 = FromRGB(240, 240, 240),
+            TextTransparency = 0.3,
+            Text = Data.Name or Data.name or "Preview",
+            Size = UDim2New(1, 0, 0, 15),
+            BackgroundTransparency = 1,
+            TextXAlignment = Enum.TextXAlignment.Left,
+            BorderSizePixel = 0,
+            ZIndex = 2
+        })
+        Items["Text"]:AddToTheme({TextColor3 = "Text"})
+
+        -- Inner viewport box: solid "Element" color, same as every other
+        -- inner control (sliders, dropdowns) sitting inside a translucent
+        -- outer card.
+        Items["Background"] = Instances:Create("Frame", {
+            Parent = Items["ESPPreview"].Instance,
+            Name = "\0",
+            Position = UDim2New(0, 0, 0, 25),
+            Size = UDim2New(1, 0, 1, -25),
+            BorderSizePixel = 0,
+            ZIndex = 2,
+            BackgroundColor3 = FromRGB(27, 26, 29)
+        })
+        Items["Background"]:AddToTheme({BackgroundColor3 = "Element"})
+
+        Instances:Create("UICorner", {
+            Parent = Items["Background"].Instance,
+            Name = "\0",
+            CornerRadius = UDimNew(0, 5)
+        })
+
+        Instances:Create("UIStroke", {
+            Parent = Items["Background"].Instance,
+            Name = "\0",
+            Color = FromRGB(35, 33, 38),
+            ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+        }):AddToTheme({Color = "Outline"})
+
+        Items["Viewport"] = Instances:Create("ViewportFrame", {
+            Parent = Items["Background"].Instance,
+            Name = "\0",
+            BackgroundTransparency = 1,
+            Size = UDim2New(1, 0, 1, 0),
+            ZIndex = 2,
+            BorderSizePixel = 0
+        })
+    end
+
+    function Preview:SetText(Text)
+        Items["Text"].Instance.Text = Text
+    end
+
+    function Preview:SetVisibility(Bool)
+        Items["ESPPreview"].Instance.Visible = Bool
+    end
+
+    function Preview:RefreshPosition(Bool)
+        -- no-op: kept only so Section:TweenElements() doesn't error if
+        -- ESPPreview is registered into Section.Elements
+    end
+
+    -- Scriptable so nothing but our own Heartbeat loop drives the camera
+    -- (Track expects a CameraSubject we're not setting).
+    local ViewportCamera = Instance.new("Camera")
+    Items["Viewport"].Instance.CurrentCamera = ViewportCamera
+    ViewportCamera.CameraType = Enum.CameraType.Scriptable
+
+    local PreviewModel = nil
+    local RenderObjects = { }
+    local Connections = { }
+
+    local OFFSET = CFrame.new(0, 2.5, -8.5)
+
+    local ValidClasses = {
+        MeshPart = true,
+        Part = true,
+        Accoutrement = true,
+        Pants = true,
+        Shirt = true,
+        Humanoid = true,
+        BoxHandleAdornment = true,
+        CylinderHandleAdornment = true,
+        Highlight = true
+    }
+
+    local function DisconnectAll()
+        for _, Connection in ipairs(Connections) do
+            Connection:Disconnect()
+        end
+        Connections = { }
+    end
+
+    local function ClearViewport()
+        RenderObjects = { }
+        for _, Obj in ipairs(Items["Viewport"].Instance:GetChildren()) do
+            if not Obj:IsA("Camera") then
+                Obj:Destroy()
+            end
+        end
+    end
+
+    function Preview:RemoveObject(Object)
+        local Clone = RenderObjects[Object]
+        if not Clone then
+            return
+        end
+
+        RenderObjects[Object] = nil
+
+        if Clone.Parent and Clone.Parent:IsA("Accoutrement") then
+            Clone.Parent:Destroy()
+        else
+            Clone:Destroy()
+        end
+    end
+
+    function Preview:AddObject(Object)
+        if not Object or not ValidClasses[Object.ClassName] then
+            return
+        end
+
+        local IsArchivable = Object.Archivable
+        Object.Archivable = true
+        local Clone = Object:Clone()
+        Object.Archivable = IsArchivable
+
+        if Object:IsA("BasePart") then
+            RenderObjects[Object] = Clone
+        elseif Object:IsA("Accoutrement") then
+            if Object:FindFirstChild("Handle") and Clone:FindFirstChild("Handle") then
+                RenderObjects[Object.Handle] = Clone.Handle
+            end
+        elseif Object:IsA("Humanoid") then
+            Clone:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
+            Clone:SetStateEnabled(Enum.HumanoidStateType.Running, false)
+            Clone:SetStateEnabled(Enum.HumanoidStateType.RunningNoPhysics, false)
+            Clone:SetStateEnabled(Enum.HumanoidStateType.Climbing, false)
+            Clone:SetStateEnabled(Enum.HumanoidStateType.StrafingNoPhysics, false)
+            Clone:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
+            Clone:SetStateEnabled(Enum.HumanoidStateType.GettingUp, false)
+            Clone:SetStateEnabled(Enum.HumanoidStateType.Jumping, false)
+            Clone:SetStateEnabled(Enum.HumanoidStateType.Landed, false)
+            Clone:SetStateEnabled(Enum.HumanoidStateType.Flying, false)
+            Clone:SetStateEnabled(Enum.HumanoidStateType.Freefall, false)
+            Clone:SetStateEnabled(Enum.HumanoidStateType.Seated, false)
+            Clone:SetStateEnabled(Enum.HumanoidStateType.PlatformStanding, false)
+            Clone:SetStateEnabled(Enum.HumanoidStateType.Dead, false)
+            Clone:SetStateEnabled(Enum.HumanoidStateType.Swimming, false)
+            Clone:SetStateEnabled(Enum.HumanoidStateType.Physics, false)
+            Clone.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
+        end
+
+        return Clone
+    end
+
+    function Preview:BuildFromModel(Model)
+        ClearViewport()
+        DisconnectAll()
+
+        PreviewModel = Model
+        Preview.Player = Model
+
+        if not Model then
+            return
+        end
+
+        local Viewmodel = Instance.new("Model")
+        Viewmodel.Name = "Viewmodel"
+        Viewmodel.Parent = Items["Viewport"].Instance
+
+        for _, Object in ipairs(Model:GetDescendants()) do
+            local Clone = self:AddObject(Object)
+            if Clone then
+                Clone.Parent = Viewmodel
+            end
+        end
+
+        table.insert(Connections, Model.DescendantAdded:Connect(function(Object)
+            local Clone = self:AddObject(Object)
+            if Clone then
+                Clone.Parent = Viewmodel
+            end
+        end))
+
+        table.insert(Connections, Model.DescendantRemoving:Connect(function(Object)
+            self:RemoveObject(Object)
+        end))
+    end
+
+    Library:Connect(RunService.Heartbeat, function()
+        if not PreviewModel or not Items["ESPPreview"].Instance.Visible then
+            return
+        end
+
+        local Root = PreviewModel:FindFirstChild("HumanoidRootPart")
+        if not Root then
+            return
+        end
+
+        ViewportCamera.CFrame = CFrame.new(Root.CFrame:ToWorldSpace(OFFSET).Position, Root.Position)
+
+        for Original, Clone in pairs(RenderObjects) do
+            if Original and Original.Parent then
+                Clone.CFrame = Original.CFrame
+            else
+                Preview:RemoveObject(Original)
+            end
+        end
+    end)
+
+    task.spawn(function()
+        local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+        Preview:BuildFromModel(Character)
+    end)
+
+    Library:Connect(LocalPlayer.CharacterAdded, function(NewCharacter)
+        task.wait(1)
+        Preview:BuildFromModel(NewCharacter)
+    end)
+
+    Preview.Section.Elements[#Preview.Section.Elements+1] = Preview
+
+    return setmetatable(Preview, Library.Sections)
+end
+
+
     Library.CreateSettingsPage = function(self, Window, KeybindList)
         local Page = Window:Page({Name = "Settings", Icon = "122669828593160"})
 
