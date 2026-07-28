@@ -2308,7 +2308,12 @@ local Library do
                     Visible = true,
                     BorderColor3 = FromRGB(0, 0, 0),
                     AnchorPoint = Vector2New(1, 0),
+                    BackgroundTransparency = 0.15,
                     Size = UDim2New(0, 185, 1, 0),
+                    ZIndex = 2,
+                    BorderSizePixel = 0,
+                    BackgroundColor3 = FromRGB(27, 25, 29)
+                })  Items["LeftTabs"]:AddToTheme({BackgroundColor3 = "Background"})
 
                 Library:MakeBlurred(Items["LeftTabs"], Window)
 
@@ -3471,7 +3476,13 @@ local Library do
                     BorderColor3 = FromRGB(0, 0, 0),
                     Text = "",
                     AutoButtonColor = false,
+                    BackgroundTransparency = 1,
+                    BorderSizePixel = 0,
                     Size = UDim2New(0, 160, 0, 40),
+                    ZIndex = 2,
+                    TextSize = 14,
+                    BackgroundColor3 = FromRGB(124, 163, 255)
+                })  Items["Inactive"]:AddToTheme({BackgroundColor3 = "Accent"})
                 
                 Instances:Create("UICorner", {
                     Parent = Items["Inactive"].Instance,
